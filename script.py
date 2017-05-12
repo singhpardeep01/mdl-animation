@@ -3,7 +3,9 @@ from display import *
 from matrix import *
 from draw import *
 
-
+num_frames = 0
+basename = ''
+knobs = []
 """======== first_pass( commands, symbols ) ==========
 
   Checks the commands array for any animation commands
@@ -22,20 +24,20 @@ from draw import *
   jdyrlandweaver
   ==================== """
 def first_pass( commands ):
+    global num_frames
+    global basename
+    global knobs
     framesP = False
     basenameP = False
     varyP = False
     for command in commands:
         c = command[0]
         args = command[1:]
-        framesP = False
-        basenameP = False
-        varyP = False
         if c == 'frames':
             num_frames = args[0]
-            framesP = True
+            framesP = True           
         elif c == 'basename':
-            basename = arges[0]
+            basename = args[0]
             basenameP = True
         elif c == 'vary':
             varyP = True
@@ -45,6 +47,7 @@ def first_pass( commands ):
     if framesP == True and basenameP == False:
         basename = "frame"
         print "Basename not found. Basename set as frame"
+    
     pass
 
 
@@ -66,10 +69,27 @@ def first_pass( commands ):
   appropirate value. 
   ===================="""
 def second_pass( commands, num_frames ):
+    global num_frames
+    global basename
+    global knobs
+    for x in range(num_frames):
+        knobs.append({})
+    for command in commands:
+        c = command[0]
+        args = command[1:]
+        if c == 'vary':
+            current = args[3]
+            increment = (args[4] - current) / (args[2] - args[1] + 0.0)
+            for x in range(args[1], args[2]):
+                knobs[x][args[0]] = current
+                current += increment
     pass
 
 
 def run(filename):
+    global num_frames
+    global basename
+    global knobs
     """
     This function runs an mdl script
     """
@@ -90,6 +110,8 @@ def run(filename):
     screen = new_screen()
     tmp = []
     step = 0.1
+    first_pass(commands)
+    second_pass(commands, num_frames)
     for command in commands:
         print command
         c = command[0]
