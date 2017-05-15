@@ -80,7 +80,7 @@ def second_pass( commands ):
         if c == 'vary':
             current = args[3]
             increment = (args[4] - current) / (args[2] - args[1] + 0.0)
-            for x in range(args[1], args[2]):
+            for x in range(args[1], args[2] + 1):
                 knobs[x][args[0]] = current
                 current += increment
     pass
@@ -104,7 +104,6 @@ def run(filename):
     else:
         print "Parsing failed."
         return
-
     ident(tmp)
     stack = [ [x[:] for x in tmp] ]
     screen = new_screen()
@@ -114,9 +113,10 @@ def run(filename):
     second_pass(commands)
     if num_frames > 0:
         for frame in range(num_frames):
-            
+            print "FRAME: " + str(frame)
+            for symbol in symbols:
+                symbols[symbol][1] = knobs[frame][symbol]
             for command in commands:                
-                #print command
                 c = command[0]
                 args = command[1:]
 
@@ -140,17 +140,24 @@ def run(filename):
                     draw_polygons(tmp, screen, color)
                     tmp = []
                 elif c == 'move':
-                    tmp = make_translate(args[0], args[1], args[2])
+                    adjust = 1
+                    if args[3] != None:
+                        adjust = symbols[args[3]][1]
+                    tmp = make_translate(args[0] * adjust, args[1] * adjust, args[2] * adjust)
                     matrix_mult(stack[-1], tmp)
                     stack[-1] = [x[:] for x in tmp]
                     tmp = []
                 elif c == 'scale':
-                    tmp = make_scale(args[0], args[1], args[2])
+                    if args[3] != None:
+                        adjust = symbols[args[3]][1]                    
+                    tmp = make_scale(args[0] * adjust, args[1] * adjust, args[2] * adjust)
                     matrix_mult(stack[-1], tmp)
                     stack[-1] = [x[:] for x in tmp]
                     tmp = []
                 elif c == 'rotate':
-                    theta = args[1] * (math.pi/180)
+                    if args[2] != None:
+                        adjsut = symbols[args[2]][1]
+                    theta = args[1] * adjust * (math.pi/180)
                     if args[0] == 'x':
                         tmp = make_rotX(theta)
                     elif args[0] == 'y':
@@ -168,3 +175,8 @@ def run(filename):
                     display(screen)
                 elif c == 'save':
                     save_extension(screen, args[0])
+                print command
+            print "Saving Frame:" + str(frame)
+            save_extension(screen, "anim/" + basename + ("%03d" % frame) + ".png")
+      
+
