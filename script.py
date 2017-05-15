@@ -111,7 +111,7 @@ def run(filename):
     step = 0.1
     first_pass(commands)
     second_pass(commands)
-    if num_frames > 0:
+    if num_frames > 1:
         for frame in range(num_frames):
             print "FRAME: " + str(frame)
             for symbol in symbols:
@@ -178,5 +178,69 @@ def run(filename):
                 print command
             print "Saving Frame:" + str(frame)
             save_extension(screen, "anim/" + basename + ("%03d" % frame) + ".png")
-      
+            screen = new_screen()
+            tmp = new_matrix()
+            ident(tmp)
+            stack = [ [x[:] for x in tmp] ]
+        make_animation(basename)
+    else:
+        for command in commands:                
+                c = command[0]
+                args = command[1:]
 
+                if c == 'box':
+                    add_box(tmp,
+                            args[0], args[1], args[2],
+                            args[3], args[4], args[5])
+                    matrix_mult( stack[-1], tmp )
+                    draw_polygons(tmp, screen, color)
+                    tmp = []
+                elif c == 'sphere':
+                    add_sphere(tmp,
+                               args[0], args[1], args[2], args[3], step)
+                    matrix_mult( stack[-1], tmp )
+                    draw_polygons(tmp, screen, color)
+                    tmp = []
+                elif c == 'torus':
+                    add_torus(tmp,
+                              args[0], args[1], args[2], args[3], args[4], step)
+                    matrix_mult( stack[-1], tmp )
+                    draw_polygons(tmp, screen, color)
+                    tmp = []
+                elif c == 'move':
+                    adjust = 1
+                    if args[3] != None:
+                        adjust = symbols[args[3]][1]
+                    tmp = make_translate(args[0] * adjust, args[1] * adjust, args[2] * adjust)
+                    matrix_mult(stack[-1], tmp)
+                    stack[-1] = [x[:] for x in tmp]
+                    tmp = []
+                elif c == 'scale':
+                    if args[3] != None:
+                        adjust = symbols[args[3]][1]                    
+                    tmp = make_scale(args[0] * adjust, args[1] * adjust, args[2] * adjust)
+                    matrix_mult(stack[-1], tmp)
+                    stack[-1] = [x[:] for x in tmp]
+                    tmp = []
+                elif c == 'rotate':
+                    if args[2] != None:
+                        adjsut = symbols[args[2]][1]
+                    theta = args[1] * adjust * (math.pi/180)
+                    if args[0] == 'x':
+                        tmp = make_rotX(theta)
+                    elif args[0] == 'y':
+                        tmp = make_rotY(theta)
+                    else:
+                        tmp = make_rotZ(theta)
+                    matrix_mult( stack[-1], tmp )
+                    stack[-1] = [ x[:] for x in tmp]
+                    tmp = []
+                elif c == 'push':
+                    stack.append([x[:] for x in stack[-1]] )
+                elif c == 'pop':
+                    stack.pop()
+                elif c == 'display':
+                    display(screen)
+                elif c == 'save':
+                    save_extension(screen, args[0])
+                print command
