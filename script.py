@@ -119,8 +119,12 @@ def run(filename):
             for command in commands:                
                 c = command[0]
                 args = command[1:]
-
-                if c == 'box':
+                if c == 'set':
+                    symbols[args[0]][1] = args[1]
+                elif c == 'set_knobs':
+                    for symbol in symbols:
+                        symbols[symbol][1] = args[0]
+                elif c == 'box':
                     add_box(tmp,
                             args[0], args[1], args[2],
                             args[3], args[4], args[5])
@@ -188,7 +192,12 @@ def run(filename):
                 c = command[0]
                 args = command[1:]
 
-                if c == 'box':
+                if c == 'set':
+                    symbols[args[0]][1] = args[1]
+                elif c == 'set_knobs':
+                    for symbol in symbols:
+                        symbols[symbol][1] = args[0]
+                elif c == 'box':
                     add_box(tmp,
                             args[0], args[1], args[2],
                             args[3], args[4], args[5])
